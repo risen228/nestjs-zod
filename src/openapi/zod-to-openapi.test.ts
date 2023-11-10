@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+import { createMock } from '@golevelup/ts-jest'
 import { z, ZodTypeAny } from '../z'
 import { zodToOpenAPI } from './zod-to-openapi'
 
@@ -73,38 +75,57 @@ const transformedSchema = z
 
 const lazySchema = z.lazy(() => z.string())
 
-it('should serialize a complex schema', () => {
-  const openApiObject = zodToOpenAPI(complexTestSchema)
+const rootRecursiveSchema = z.lazy(() => z.union([rootNodeScheme, z.string()]))
 
-  expect(openApiObject).toMatchSnapshot()
+const rootNodeScheme: z.ZodType<{ text: string }> = z.object({
+  text: z.string(),
+  children: z.array(rootRecursiveSchema),
+})
+
+const nestedNodeScheme: z.ZodType<{ text: string }> = z.object({
+  text: z.string(),
+  root: rootRecursiveSchema,
+  children: z.array(z.lazy(() => nestedRecursiveSchema)),
+})
+
+const nestedRecursiveSchema = z.union([nestedNodeScheme, z.string()])
+
+it('should serialize a complex schema', () => {
+  const { refs, schema } = zodToOpenAPI(complexTestSchema)
+
+  expect(schema).toMatchSnapshot()
+  expect(refs).toEqual({})
 })
 
 it('should serialize an intersection of objects', () => {
-  const openApiObject = zodToOpenAPI(intersectedObjectsSchema)
+  const { refs, schema } = zodToOpenAPI(intersectedObjectsSchema)
 
-  expect(openApiObject).toMatchSnapshot()
+  expect(schema).toMatchSnapshot()
+  expect(refs).toEqual({})
 })
 
 it('should serialize an intersection of unions', () => {
-  const openApiObject = zodToOpenAPI(intersectedUnionsSchema)
+  const { refs, schema } = zodToOpenAPI(intersectedUnionsSchema)
 
-  expect(openApiObject).toMatchSnapshot()
+  expect(schema).toMatchSnapshot()
+  expect(refs).toEqual({})
 })
 
 it('should serialize an intersection with overrided fields', () => {
-  const openApiObject = zodToOpenAPI(overrideIntersectionSchema)
+  const { refs, schema } = zodToOpenAPI(overrideIntersectionSchema)
 
-  expect(openApiObject).toMatchSnapshot()
+  expect(schema).toMatchSnapshot()
+  expect(refs).toEqual({})
 })
 
 it('should serialize objects', () => {
-  const schema = z.object({
+  const dto = z.object({
     prop1: z.string(),
     prop2: z.string().optional(),
   })
-  const openApiObject = zodToOpenAPI(schema)
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     type: 'object',
     required: ['prop1'],
     properties: {
@@ -116,18 +137,19 @@ it('should serialize objects', () => {
       },
     },
   })
+  expect(refs).toEqual({})
 })
 
 it('should serialize partial objects', () => {
-  const schema = z
+  const dto = z
     .object({
       prop1: z.string(),
       prop2: z.string(),
     })
     .partial()
-  const openApiObject = zodToOpenAPI(schema)
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     type: 'object',
     properties: {
       prop1: {
@@ -138,37 +160,42 @@ it('should serialize partial objects', () => {
       },
     },
   })
+  expect(refs).toEqual({})
 })
 
 it('should serialize nullable types', () => {
-  const schema = z.string().nullable()
-  const openApiObject = zodToOpenAPI(schema)
+  const dto = z.string().nullable()
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({ type: 'string', nullable: true })
+  expect(schema).toEqual({ type: 'string', nullable: true })
+  expect(refs).toEqual({})
 })
 
 it('should serialize optional types', () => {
-  const schema = z.string().optional()
-  const openApiObject = zodToOpenAPI(schema)
+  const dto = z.string().optional()
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({ type: 'string' })
+  expect(schema).toEqual({ type: 'string' })
+  expect(refs).toEqual({})
 })
 
 it('should serialize types with default value', () => {
-  const schema = z.string().default('abitia')
-  const openApiObject = zodToOpenAPI(schema)
+  const dto = z.string().default('abitia')
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({ type: 'string', default: 'abitia' })
+  expect(schema).toEqual({ type: 'string', default: 'abitia' })
+  expect(refs).toEqual({})
 })
 
 it('should serialize enums', () => {
-  const schema = z.enum(['adama', 'kota'])
-  const openApiObject = zodToOpenAPI(schema)
+  const dto = z.enum(['adama', 'kota'])
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     type: 'string',
     enum: ['adama', 'kota'],
   })
+  expect(refs).toEqual({})
 })
 
 it('should serialize native enums', () => {
@@ -177,14 +204,15 @@ it('should serialize native enums', () => {
     KOTA = 'kota',
   }
 
-  const schema = z.nativeEnum(NativeEnum)
-  const openApiObject = zodToOpenAPI(schema)
+  const dto = z.nativeEnum(NativeEnum)
+  const { refs, schema } = zodToOpenAPI(dto)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     'type': 'string',
     'enum': ['adama', 'kota'],
     'x-enumNames': ['ADAMA', 'KOTA'],
   })
+  expect(refs).toEqual({})
 })
 
 describe('scalar types', () => {
@@ -201,20 +229,21 @@ describe('scalar types', () => {
   for (const [zodType, expectedType, expectedFormat] of testCases) {
     // eslint-disable-next-line no-loop-func
     it(expectedType, () => {
-      const openApiObject = zodToOpenAPI(zodType)
+      const { refs, schema } = zodToOpenAPI(zodType)
 
-      expect(openApiObject).toEqual({
+      expect(schema).toEqual({
         type: expectedType,
         format: expectedFormat ?? undefined,
       })
+      expect(refs).toEqual({})
     })
   }
 })
 
 it('should serialize transformed schema', () => {
-  const openApiObject = zodToOpenAPI(transformedSchema)
+  const { refs, schema } = zodToOpenAPI(transformedSchema)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     type: 'object',
     required: ['seconds'],
     properties: {
@@ -226,9 +255,38 @@ it('should serialize transformed schema', () => {
 })
 
 it('should serialize lazy schema', () => {
-  const openApiObject = zodToOpenAPI(lazySchema)
+  const { refs, schema } = zodToOpenAPI(lazySchema)
 
-  expect(openApiObject).toEqual({
+  expect(schema).toEqual({
     type: 'string',
   })
+  expect(refs).toEqual({})
+})
+
+it('should serialize root recursive schema', () => {
+  const id = '6d7efd287e'
+
+  jest
+    .spyOn(crypto, 'randomBytes')
+    .mockImplementation(() => ({ toString: () => id }))
+
+  const { refs, schema } = zodToOpenAPI(rootRecursiveSchema)
+
+  expect(schema).toEqual({
+    $ref: `#/components/schemas/ZodLazy${id}`,
+  })
+  expect(refs).toMatchSnapshot()
+})
+
+it('should serialize nested recursive schema', () => {
+  let i = 0
+
+  jest
+    .spyOn(crypto, 'randomBytes')
+    .mockImplementation(() => ({ toString: () => i++ }))
+
+  const { refs, schema } = zodToOpenAPI(nestedRecursiveSchema)
+
+  expect(schema).toMatchSnapshot()
+  expect(refs).toMatchSnapshot()
 })

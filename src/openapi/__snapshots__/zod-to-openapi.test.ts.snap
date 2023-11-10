@@ -273,3 +273,124 @@ Object {
   "type": "object",
 }
 `;
+
+exports[`should serialize nested recursive schema 1`] = `
+Object {
+  "oneOf": Array [
+    Object {
+      "properties": Object {
+        "children": Object {
+          "items": Object {
+            "$ref": "#/components/schemas/ZodLazy1",
+          },
+          "type": "array",
+        },
+        "root": Object {
+          "$ref": "#/components/schemas/ZodLazy0",
+        },
+        "text": Object {
+          "type": "string",
+        },
+      },
+      "required": Array [
+        "text",
+        "root",
+        "children",
+      ],
+      "type": "object",
+    },
+    Object {
+      "type": "string",
+    },
+  ],
+}
+`;
+
+exports[`should serialize nested recursive schema 2`] = `
+Object {
+  "ZodLazy0": Object {
+    "oneOf": Array [
+      Object {
+        "properties": Object {
+          "children": Object {
+            "items": Object {
+              "$ref": "#/components/schemas/ZodLazy0",
+            },
+            "type": "array",
+          },
+          "text": Object {
+            "type": "string",
+          },
+        },
+        "required": Array [
+          "text",
+          "children",
+        ],
+        "type": "object",
+      },
+      Object {
+        "type": "string",
+      },
+    ],
+  },
+  "ZodLazy1": Object {
+    "oneOf": Array [
+      Object {
+        "properties": Object {
+          "children": Object {
+            "items": Object {
+              "$ref": "#/components/schemas/ZodLazy1",
+            },
+            "type": "array",
+          },
+          "root": Object {
+            "$ref": "#/components/schemas/ZodLazy0",
+          },
+          "text": Object {
+            "type": "string",
+          },
+        },
+        "required": Array [
+          "text",
+          "root",
+          "children",
+        ],
+        "type": "object",
+      },
+      Object {
+        "type": "string",
+      },
+    ],
+  },
+}
+`;
+
+exports[`should serialize root recursive schema 1`] = `
+Object {
+  "ZodLazy6d7efd287e": Object {
+    "oneOf": Array [
+      Object {
+        "properties": Object {
+          "children": Object {
+            "items": Object {
+              "$ref": "#/components/schemas/ZodLazy6d7efd287e",
+            },
+            "type": "array",
+          },
+          "text": Object {
+            "type": "string",
+          },
+        },
+        "required": Array [
+          "text",
+          "children",
+        ],
+        "type": "object",
+      },
+      Object {
+        "type": "string",
+      },
+    ],
+  },
+}
+`;
