@@ -23,6 +23,9 @@ const complexTestSchema = z.object({
   literalBoolean: z.literal(true),
   array: z.array(z.string()).max(3),
   objectNested: z.object({
+    cuid: z.string().cuid(),
+    cuid2: z.string().cuid2(),
+    ulid: z.string().ulid(),
     uuid: z.string().uuid(),
   }),
   record: z.record(z.number()),

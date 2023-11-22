@@ -41,8 +41,12 @@ export function zodToOpenAPI(
         object.format = 'uri'
       } else if (check.kind === 'uuid') {
         object.format = 'uuid'
+      } else if (check.kind === 'ulid') {
+        object.format = 'ulid'
       } else if (check.kind === 'cuid') {
         object.format = 'cuid'
+      } else if (check.kind === 'cuid2') {
+        object.format = 'cuid2'
       } else if (check.kind === 'regex') {
         object.pattern = check.regex.source
       } else if (check.kind === 'datetime') {

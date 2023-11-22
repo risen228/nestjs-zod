@@ -90,12 +90,27 @@ Object {
     },
     "objectNested": Object {
       "properties": Object {
+        "cuid": Object {
+          "format": "cuid",
+          "type": "string",
+        },
+        "cuid2": Object {
+          "format": "cuid2",
+          "type": "string",
+        },
+        "ulid": Object {
+          "format": "ulid",
+          "type": "string",
+        },
         "uuid": Object {
           "format": "uuid",
           "type": "string",
         },
       },
       "required": Array [
+        "cuid",
+        "cuid2",
+        "ulid",
         "uuid",
       ],
       "type": "object",
