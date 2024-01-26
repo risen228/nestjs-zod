@@ -647,6 +647,6 @@ The output will be the following:
 - [zod-dto](https://github.com/kbkk/abitia/tree/master/packages/zod-dto)  
   `nestjs-zod` includes a lot of refactored code from `zod-dto`.
 
-- [zod-nestjs](https://github.com/anatine/zod-plugins/tree/main/libs/zod-nestjs) and [zod-openapi](https://github.com/anatine/zod-plugins/tree/main/libs/zod-openapi)  
+- [zod-nestjs](https://github.com/anatine/zod-plugins/blob/main/packages/zod-nestjs/README.md) and [zod-openapi](https://github.com/anatine/zod-plugins/tree/main/libs/zod-openapi)  
   These libraries bring some new features compared to `zod-dto`.  
   `nestjs-zod` has used them too.
