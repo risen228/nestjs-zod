@@ -218,9 +218,17 @@ export function zodToOpenAPI(
   }
 
   if (is(zodType, z.ZodRecord)) {
-    const { valueType } = zodType._def
+    const { valueType, keyType } = zodType._def
+    const schema = zodToOpenAPI(valueType, visited)
     object.type = 'object'
-    object.additionalProperties = zodToOpenAPI(valueType, visited)
+    if (is(keyType, z.ZodEnum)) {
+      object.properties = {}
+      for (const [, enumKey] of Object.entries(keyType.Values)) {
+        object.properties[enumKey] = schema
+      }
+    } else {
+      object.additionalProperties = schema
+    }
   }
 
   if (is(zodType, z.ZodIntersection)) {
